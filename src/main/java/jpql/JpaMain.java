@@ -17,20 +17,97 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Team team = new Team();
-            team.setName("teamA");
-            em.persist(team);
+            Team teamA = new Team();
+            teamA.setName("teamA");
+            em.persist(teamA);
 
-            Member member = new Member();
-            member.setUsername("member");
-            member.setAge(10);
-            member.setMemberType(MemberType.USER);
+            Team teamB = new Team();
+            teamB.setName("teamB");
+            em.persist(teamB);
 
-            member.setTeam(team);
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setUsername("member1");
+            member1.setAge(10);
+            member1.setMemberType(MemberType.USER);
+
+            Member member2 = new Member();
+            member2.setUsername("member2");
+            member2.setAge(10);
+            member2.setMemberType(MemberType.USER);
+
+            Member member3 = new Member();
+            member3.setUsername("member3");
+            member3.setAge(10);
+            member3.setMemberType(MemberType.USER);
+
+            member1.setTeam(teamA);
+            member2.setTeam(teamA);
+            member3.setTeam(teamB);
+            em.persist(member1);
+            em.persist(member2);
+            em.persist(member3);
 
             em.flush();
             em.clear();
+
+//            String query = "select distinct t from Team t";
+//            List<Team> teamList = em.createQuery(query,Team.class)
+//                    .getResultList();
+//
+//            System.out.println(teamList.size());
+//
+//            for (Team team : teamList) {
+//                System.out.println("team = " + team.getName() + "|members = "+team.getMembers().size());
+//                for (Member member : team.getMembers()) {
+//                    System.out.println("-> member = "+ member);
+//                }
+//            }
+
+//            Member findMember = em.createNamedQuery("Member.findByUsername", Member.class)
+//                    .setParameter("username", member3.getUsername())
+//                    .getSingleResult();
+//
+//            System.out.println("findMember => "+findMember);
+
+            int resultCount = em.createQuery("update Member m set m.age = 20")
+                    .executeUpdate();
+
+            System.out.println("resultCount = " + resultCount);
+
+            /*
+            * 벌크연산은 영속성 컨텍스트를 무시하고 데이터베이스에 직접 쿼리
+            *
+            * 벌크 연산을 먼저 실행
+            * 벌크 연산을 수행 후 영속성 컨텍스트 초기화
+            * */
+
+            /*
+            * fetch join VS join
+            *
+            * 일반 조인 실행 시 연관된 엔티티를 함께 조회하지 않음.
+            *
+            * JPQL은 결과를 반환할 깨 연관관계 고려X
+            * 단지 select 절에 지정한 엔티티만 조회할 뿐
+            * 여기서는 team 엔티티만 조회하고, 회원 엔티티는 조회 X
+            *
+            * 페치조인을 사용할 때만 연관된 엔티티도 함께 조회(즉시 로딩)
+            * 페치 조인은 객체 그래프를 SQL 한번에 조회하는 개념
+            *
+            * 페치 조인의 한계
+            *
+            * 페치 조인 대상에는 별칭을 줄 수 없다.
+            * 둘 이상의 컬렉션은 페치조인 할 수 없다.
+            * 컬렉션을 페치조인하면 페이징 API를 사용할 수 없다.
+            *   일대일, 다대일 같은 단일 값 연관 필드들은 페치 조인해도 페이징 가능
+            *   하이버네이트는 경고 로그를 남기고 메모리에서 페이징
+            *
+            * 특징
+            *
+            * 얀관된 엔티티들을 SQL 한 번으로 조회 - 성능최적화
+            * 엔티티에 직접 적용하는 글로벌 로딩 전략보다 우선함
+            * 실무에서 글로벌 로딩 전략은 모두 지연 로딩
+            * 최적화가 필요한 곳은 페치조인 적용
+용           **/
 
 //            String query = "select  "+
 //                    "case when m.age <= 10 then '학생요금'" +
@@ -83,11 +160,11 @@ public class JpaMain {
             *
             * */
 
-            String query = "select m from Team t join t.members m";
-            Integer result = em.createQuery(query,Integer.class)
-                    .getSingleResult();
-
-            System.out.println("result => "+ result);
+//            String query = "select m from Team t join t.members m";
+//            Integer result = em.createQuery(query,Integer.class)
+//                    .getSingleResult();
+//
+//            System.out.println("result => "+ result);
 
             tx.commit();
         } catch (Exception e) {
