@@ -39,15 +39,15 @@ public class JpaMain {
 //                    " end"+
 //                    " from Member m";
 
-            String query = "select coalesce(m.username, '이름이 없는 회원') from Member m";
-            List<Object[]> result = em.createQuery(query)
-                    .getResultList();
+//            String query = "select coalesce(m.username, '이름이 없는 회원') from Member m";
+//            List<Object[]> result = em.createQuery(query)
+//                    .getResultList();
 
-            for (Object[] objects : result){
-                System.out.println("objects : "+objects[0]);
-                System.out.println("objects : "+objects[1]);
-                System.out.println("objects : "+objects[2]);
-            }
+//            for (Object[] objects : result){
+//                System.out.println("objects : "+objects[0]);
+//                System.out.println("objects : "+objects[1]);
+//                System.out.println("objects : "+objects[2]);
+//            }
 
 //            List<Member> result = em.createQuery("select m from Member m order by m.age desc", Member.class)
 //                    .setFirstResult(0)
@@ -69,6 +69,25 @@ public class JpaMain {
              *            * */
 //            List<MemberDto> resultList = em.createQuery("select new jpql.MemberDto(m.username,m.age) from Member m", MemberDto.class)
 //                    .getResultList();
+
+            /*
+            * 경로 표현식
+            * 상태 필드 : 경로 탐색의 끝. 탐색 X
+            * 단일 값 연관 경로 : 묵시적 내부 조인 발생. 탐색 O
+            * 컬렉션 값 연관 경로 : 묵시적 내부 조인 발생, 탐색 X
+            * FROM 절에서 명시적 조인을 통해 별칭을 얻으면 별칭을 통해 탐색 가능
+            *
+            * 실무에서는 묵시적 조인을 사용하지 말자 !!\
+            * 조인은 SQL 튜닝에 중요 포인트
+            * 묵시적 조인은 조인이 일어나는 상황을 한눈에 파악하기 어렵다.
+            *
+            * */
+
+            String query = "select m from Team t join t.members m";
+            Integer result = em.createQuery(query,Integer.class)
+                    .getSingleResult();
+
+            System.out.println("result => "+ result);
 
             tx.commit();
         } catch (Exception e) {
